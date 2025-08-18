@@ -10,7 +10,7 @@ This isn’t about not knowing the console—it’s about working smarter when t
 
 ## Folder Structure
 
-The folders bin/, and build/ with their artifacts *.jar, *.exe, *.dll, *.so, etc will not be tracked, except libraries in the lib/ folder.
+The folders build/ with their artifacts *.jar, *.exe, *.dll, *.so, etc will not be tracked, except libraries in the lib/ folder.
 
 ```
 Tone3/  
