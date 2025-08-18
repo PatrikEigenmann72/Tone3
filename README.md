@@ -2,7 +2,7 @@
 
 ## About
 
-Tone3 was built for those moments in live sound when you need a signal generator now—not after Googling console layers or digging through vendor-specific logic. Whether the desk buries its tools or you simply want something reliable on your own terms, Tone3 has your back.
+Tone3 was built for those moments in live sound when you need a signal generator now — not after googling console layers or digging through vendor-specific logic. Whether the desk buries its tools or you simply want something reliable on your own terms, Tone3 has your back.
 
 It’s your fallback when gear doesn’t cooperate. Plug in a 3.5mm to dual XLR, designate a tone and noise channel, and you're ready. No menus, no manuals, no second-guessing.
 
