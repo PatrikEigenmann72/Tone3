@@ -25,14 +25,14 @@
 // Mon 2025-06-30 Slider regains focus after toggling playback.             Version 00.10  
 // Mon 2025-06-30 Added header comments to the file.                        Version 00.11
 // --------------------------------------------------------------------------------------
-/* Package Tone3.Gui */
-//package Tone3.Gui;
 
 /* All imports alphabetical sorted. */
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Collections;
 import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.Enumeration;
+import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import tone3.audio.*;
@@ -118,7 +118,7 @@ private SineWaveGenerator activeSineGen = null;
          * Add minimal tick marks to the slider: 20 Hz and 20 kHz.
          * Keeps UI clean while giving reference points for ears.
          */
-        Dictionary<Integer, JLabel> labelTable = new Hashtable<>();
+        LabelDictionary labelTable = new LabelDictionary();
         labelTable.put(20, new JLabel("20"));
         labelTable.put(20000, new JLabel("20k"));
         frequencySlider.setLabelTable(labelTable);
@@ -352,4 +352,35 @@ private SineWaveGenerator activeSineGen = null;
             audioPlayer.setGenerators(activeSineGen, pink);
         }
     }
+}
+
+/**
+ * LabelDictionary is a helper class as a workaround of the deprecated Hashtable. This class
+ * allows a more modern HashMap based approach to set up as a Dictionary.
+ */
+class LabelDictionary extends Dictionary<Integer, JLabel> {
+
+    /** Backing HashMap for label storage */
+    private final HashMap<Integer, JLabel> map = new HashMap<>();
+
+    /** Retrieves a label by its key. */
+    @Override public JLabel get(Object key) { return map.get(key); }
+
+    /** Adds a label to the dictionary. */
+    @Override public JLabel put(Integer key, JLabel value) { return map.put(key, value); }
+
+    /** Removes a label from the dictionary. */
+    @Override public JLabel remove(Object key) { return map.remove(key); }
+
+    /** Retrieves all keys in the dictionary. */
+    @Override public Enumeration<Integer> keys() { return Collections.enumeration(map.keySet()); }
+
+    /** Retrieves all labels in the dictionary. */
+    @Override public Enumeration<JLabel> elements() { return Collections.enumeration(map.values()); }
+
+    /** Retrieves the number of labels in the dictionary. */
+    @Override public int size() { return map.size(); }
+
+    /** Retrieves the number of labels in the dictionary. */
+    @Override public boolean isEmpty() { return map.isEmpty(); }
 }
