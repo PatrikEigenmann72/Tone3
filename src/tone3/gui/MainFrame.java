@@ -24,6 +24,7 @@
 // Mon 2025-06-30 Mode switching activates generators immediately.          Version 00.09  
 // Mon 2025-06-30 Slider regains focus after toggling playback.             Version 00.10  
 // Mon 2025-06-30 Added header comments to the file.                        Version 00.11
+// Thu 2025-08-21 BugFix: Fixed label removal from dictionary.              Version 00.12
 // --------------------------------------------------------------------------------------
 package tone3.gui;
 
@@ -365,13 +366,25 @@ class LabelDictionary extends Dictionary<Integer, JLabel> {
     private final HashMap<Integer, JLabel> map = new HashMap<>();
 
     /** Retrieves a label by its key. */
-    @Override public JLabel get(Object key) { return map.get(key); }
+    @Override
+    public JLabel get(Object key) {
+        if (key instanceof Integer intKey) {
+            return map.get(intKey);
+        }
+        return null;
+    }
 
     /** Adds a label to the dictionary. */
     @Override public JLabel put(Integer key, JLabel value) { return map.put(key, value); }
 
     /** Removes a label from the dictionary. */
-    @Override public JLabel remove(Object key) { return map.remove(key); }
+    @Override
+    public JLabel remove(Object key) {
+        if (key instanceof Integer intKey) {
+            return map.remove(intKey);
+        }
+        return null;
+    }
 
     /** Retrieves all keys in the dictionary. */
     @Override public Enumeration<Integer> keys() { return Collections.enumeration(map.keySet()); }
