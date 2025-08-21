@@ -25,6 +25,7 @@
 // Mon 2025-06-30 Slider regains focus after toggling playback.             Version 00.10  
 // Mon 2025-06-30 Added header comments to the file.                        Version 00.11
 // --------------------------------------------------------------------------------------
+package tone3.gui;
 
 /* All imports alphabetical sorted. */
 import java.awt.*;
