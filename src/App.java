@@ -19,13 +19,6 @@
  * Change Log:
  * Mon 2025-05-26 File created.                                     Version: 00.01
  * ------------------------------------------------------------------------------- */
-
-//import HelloWorld.*;
-
-//import Samael.ToolBox.ConsoleUtilities;
-//import Samael.ITrackable;
-//import Samael.Chronicle.Version;
-
 import javax.swing.SwingUtilities;
 
 /**
@@ -43,7 +36,7 @@ import javax.swing.SwingUtilities;
  * streamlined and predictable across multiple use cases.
  */
 //@Version(namespace = "HelloWorld", component = "App", major = 0, minor = 1)
-public class App /*implements ITrackable*/ {
+public class App {
 
     /**
      * The main method acts as the starting point of the application. When the program
@@ -66,16 +59,8 @@ public class App /*implements ITrackable*/ {
         // Using SwingUtilities.invokeLater to start a
         // Swing application as background task.
         SwingUtilities.invokeLater(() -> {
-            MainFrame mf = new MainFrame();
+            tone3.gui.MainFrame mf = new tone3.gui.MainFrame();
             mf.setVisible(true);
         });
-
-        // Using ConsoleUtilities.InvokeLater to start a
-        // Console application as background task.
-        //ConsoleUtilities.InvokeLater(() -> {
-        //    MainConsole.Run(args);
-        //});
-
-        //ConsoleUtilities.ShutDown();
     }
 }
