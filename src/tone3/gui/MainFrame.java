@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import samael.huginandmunin.*;
 import tone3.audio.*;
 
 /**
@@ -51,32 +52,34 @@ import tone3.audio.*;
  */
 public class MainFrame extends JFrame {
     
-/** The frequency slider. Move it left or right to sweep pitch in real time. */
-private final JSlider frequencySlider;
+    /** The frequency slider. Move it left or right to sweep pitch in real time. */
+    private final JSlider frequencySlider;
 
-/** Displays the frequency in Hz. Gives visual feedback while you tune. */
-private final JLabel frequencyDisplay;
+    /** Displays the frequency in Hz. Gives visual feedback while you tune. */
+    private final JLabel frequencyDisplay;
 
-/** Mode 1: Plain sine tone — left, right, both. Good old calibration. */
-private final JRadioButton sineButton;
+    /** Mode 1: Plain sine tone — left, right, both. Good old calibration. */
+    private final JRadioButton sineButton;
 
-/** Mode 2: Pink noise. Equal energy per octave. Ear-safe, analyzer-approved. */
-private final JRadioButton pinkButton;
+    /** Mode 2: Pink noise. Equal energy per octave. Ear-safe, analyzer-approved. */
+    private final JRadioButton pinkButton;
 
-/** Mode 3: Split stereo — Sine on the left, Pink on the right. Field tech’s favorite. */
-private final JRadioButton splitButton;
+    /** Mode 3: Split stereo — Sine on the left, Pink on the right. Field tech’s favorite. */
+    private final JRadioButton splitButton;
 
-/** Big button. Says Run or Stop. Launches or kills the signal path. */
-private final JButton toggleButton;
+    /** Big button. Says Run or Stop. Launches or kills the signal path. */
+    private final JButton toggleButton;
 
-/** Handles the actual audio thread. Sends samples to speakers. Runs like hell in its own loop. */
-private final AudioPlayer audioPlayer = new AudioPlayer();
+    /** Handles the actual audio thread. Sends samples to speakers. Runs like hell in its own loop. */
+    private final AudioPlayer audioPlayer = new AudioPlayer();
 
-/** Track whether we are actively generating sound. Multithreading guardrail. */
-private boolean isRunning = false;
+    /** Track whether we are actively generating sound. Multithreading guardrail. */
+    private boolean isRunning = false;
 
-/** If we’re in Sine or Split mode, this holds the sine generator for real-time updates. */
-private SineWaveGenerator activeSineGen = null;
+    /** If we’re in Sine or Split mode, this holds the sine generator for real-time updates. */
+    private SineWaveGenerator activeSineGen = null;
+
+    private final String compString = "MainFrame";
 
     /**
      * Constructor for the main window. Sets up the user interface: the frequency slider,
@@ -89,17 +92,35 @@ private SineWaveGenerator activeSineGen = null;
          * Initialize the main application window. Title is fixed and layout is locked
          * for minimal footprint. 
          */
-        super("Tone3 – Audio Test Tool");
+        super(Config.getString("App.Name") + " v" + Config.getString("App.Version") + " - " + Config.getString("App.Title"));
 
+        String msg = "Set the default closing operation!";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(400, 180);
-        setResizable(false);
+
+        msg = "Set the width and the height of the application.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        setSize(Config.getInt("App.Width"), Config.getInt("App.Height"));
+
+        msg = "Set the resizable flag to false.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        setResizable(Config.getBoolean("App.Resize"));
+
+        msg = "Create a new layout manager.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         setLayout(new BorderLayout());
 
         /* 
         * Create the frequency display label at the top of the window.
         * Shows current frequency in Hz, visually updated in real time.
         */
+        msg = "Set up the frequency display.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         frequencyDisplay = new JLabel("440 Hz", SwingConstants.CENTER);
         frequencyDisplay.setOpaque(true);
         frequencyDisplay.setBackground(Color.YELLOW);
@@ -111,6 +132,9 @@ private SineWaveGenerator activeSineGen = null;
          * Set up the frequency slider for audio frequency control.
          * Ranges from 20 Hz to 20,000 Hz—covering full hearing range.
          */
+        msg = "Create the frequency Slider.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         frequencySlider = new JSlider(20, 20000, 440);
         frequencySlider.setPaintTicks(false);
         frequencySlider.setPaintLabels(true);
@@ -120,6 +144,9 @@ private SineWaveGenerator activeSineGen = null;
          * Add minimal tick marks to the slider: 20 Hz and 20 kHz.
          * Keeps UI clean while giving reference points for ears.
          */
+        msg = "Labeling the frequency slider from 20hz to 20khz.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         LabelDictionary labelTable = new LabelDictionary();
         labelTable.put(20, new JLabel("20"));
         labelTable.put(20000, new JLabel("20k"));
@@ -129,6 +156,9 @@ private SineWaveGenerator activeSineGen = null;
          * Update frequency display and sine generator when the slider is moved.
          * Live frequency control during playback. 
          */
+        msg = "Add the event handler for the frequency slider.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         frequencySlider.addChangeListener(e -> {
             /* 
              * Grab current slider value and update the on-screen frequency label.
@@ -149,6 +179,9 @@ private SineWaveGenerator activeSineGen = null;
          * Allow arrow keys to move the slider.
          * Holding Shift speeds up navigation for coarse adjustments.
          */
+        msg = "Adding a key listener to the frequency slider.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         frequencySlider.addKeyListener(new KeyAdapter() {
             @Override  /* We're overriding the keyPressed method from KeyAdapter */
             public void keyPressed(KeyEvent e) {
@@ -171,16 +204,33 @@ private SineWaveGenerator activeSineGen = null;
          * Create the mode toggle buttons: Sine, Pink, and Split.
          * Default is Sine. Each mode sets up a different audio path.
          */
+        msg = "Creating the sine radio button.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         sineButton = new JRadioButton("Sine");
+        
+        msg = "Creating the pink noise radio button.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         pinkButton = new JRadioButton("Pink");
+
+        msg = "Creating the sine/pink combo radio button.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         splitButton = new JRadioButton("Sine L / Pink R");
         sineButton.setSelected(true);
 
+        msg = "Setting up a group from the radio buttons.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         ButtonGroup modeGroup = new ButtonGroup();
         modeGroup.add(sineButton);
         modeGroup.add(pinkButton);
         modeGroup.add(splitButton);
 
+        msg = "Creating a new panel for the radio buttons.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         JPanel controlPanel = new JPanel(new FlowLayout());
         controlPanel.add(sineButton);
         controlPanel.add(pinkButton);
@@ -194,16 +244,26 @@ private SineWaveGenerator activeSineGen = null;
          * Create the toggle button to start/stop audio playback.
          * Switches text between Run and Stop.
          */
+        msg = "The Run/Stop button is created.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         toggleButton = new JButton("Run");
 
         /* 
          * Listener for mode button clicks.
          * Applies new generator configuration live during playback.
          */
+        msg = "Adding an action listener to the button.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         toggleButton.addActionListener(e -> {
             /* Flip the playback state */
             isRunning = !isRunning;
 
+            String msg1 = "Toggle the button text from Run to Stop, or vice versa.";
+            Debug.writeLine(Debug.DebugLevel.Verbose, msg1, compString);
+            Log.writeLine(Log.LogLevel.Verbose, msg1, compString);
+            
             /* Update button label accordingly */
             toggleButton.setText(isRunning ? "Stop" : "Run");
 
@@ -211,21 +271,33 @@ private SineWaveGenerator activeSineGen = null;
                 /* Determine the selected mode and configure audio path */
                 if (sineButton.isSelected()) {
                     /* Mono sine tone */
+                    msg1 = "Sine tone running.";
+                    Debug.writeLine(Debug.DebugLevel.Verbose, msg1, compString);
+                    Log.writeLine(Log.LogLevel.Verbose, msg1, compString);
                     activeSineGen = new SineWaveGenerator();
                     activeSineGen.setFrequency(getFrequency());
                     audioPlayer.setGenerator(activeSineGen);
                 } else if (pinkButton.isSelected()) {
                     /* Mono pink noise — frequency slider is irrelevant */
+                    msg1 = "Pink noise running.";
+                    Debug.writeLine(Debug.DebugLevel.Verbose, msg1, compString);
+                    Log.writeLine(Log.LogLevel.Verbose, msg1, compString);
                     activeSineGen = null;
                     audioPlayer.setGenerator(new PinkNoiseGenerator());
                 } else if (splitButton.isSelected()) {
                     /* Stereo mode: sine on left, pink on right */
+                    msg1 = "Sine / Pink mode is running.";
+                    Debug.writeLine(Debug.DebugLevel.Verbose, msg1, compString);
+                    Log.writeLine(Log.LogLevel.Verbose, msg1, compString);
                     activeSineGen = new SineWaveGenerator();
                     activeSineGen.setFrequency(getFrequency());
                     PinkNoiseGenerator pink = new PinkNoiseGenerator();
                     audioPlayer.setGenerators(activeSineGen, pink);
                 }
 
+                msg1 = "Start the audio player!";
+                Debug.writeLine(Debug.DebugLevel.Verbose, msg1, compString);
+                Log.writeLine(Log.LogLevel.Verbose, msg1, compString);
                 /* Start audio playback thread */
                 audioPlayer.start();
 
@@ -233,10 +305,17 @@ private SineWaveGenerator activeSineGen = null;
                 SwingUtilities.invokeLater(() -> frequencySlider.requestFocusInWindow());
             } else {
                 /* Stop playback and clear sine generator reference */
+                msg1 = "Stop the audio player.";
+                Debug.writeLine(Debug.DebugLevel.Verbose, msg1, compString);
+                Log.writeLine(Log.LogLevel.Verbose, msg1, compString);
                 audioPlayer.stop();
                 activeSineGen = null;
             }
         });
+
+        msg = "Adding the toggle button run\stop to the panel.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         controlPanel.add(toggleButton);
         add(controlPanel, BorderLayout.SOUTH);
 
@@ -246,14 +325,32 @@ private SineWaveGenerator activeSineGen = null;
          * this updates the enabled state of the frequency slider
          * and applies the new generator configuration immediately.
          */
+        msg = "Adding an action listener to listen to the mode.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         ActionListener modeListener = e -> {
             updateSliderEnabledState();
             applyAudioMode(); // <-- switch tones live!
         };
 
+        msg = "Register the action listener to the radio buttons.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         sineButton.addActionListener(modeListener);
         pinkButton.addActionListener(modeListener);
         splitButton.addActionListener(modeListener);
+
+        Debug.writeLine(Debug.DebugLevel.Verbose, "Binding Ctrl+Q to exit action", "MainFrame");
+        Log.writeLine(Log.LogLevel.Verbose, "Binding Ctrl+Q to exit action", "MainFrame");
+        getRootPane().getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK), "exitApp");
+        getRootPane().getActionMap().put("exitApp", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Debug.writeLine(Debug.DebugLevel.Info, "Ctrl+Q pressed. Exiting application.", "MainFrame");
+                Log.writeLine(Log.LogLevel.Info, "Ctrl+Q pressed. Exiting application.", "MainFrame");
+                System.exit(0);
+            }
+        });
 
         updateSliderEnabledState();
         setVisible(true);
@@ -267,6 +364,9 @@ private SineWaveGenerator activeSineGen = null;
      */
     private void updateSliderEnabledState() {
         boolean enabled = !pinkButton.isSelected();
+        String msg = "Toggeling the slider enable state from '" + !enabled + "' to '" + enabled + "'.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         frequencySlider.setEnabled(enabled);
         if (enabled) {
             SwingUtilities.invokeLater(() -> frequencySlider.requestFocusInWindow());
@@ -281,6 +381,9 @@ private SineWaveGenerator activeSineGen = null;
      * @return current frequency in Hz
      */
     public int getFrequency() {
+        String msg = "Getting the slider value from the component.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         return frequencySlider.getValue();
     }
 
@@ -291,6 +394,9 @@ private SineWaveGenerator activeSineGen = null;
      * @return true if Sine is selected; false otherwise
      */
     public boolean isSineSelected() {
+        String msg = "Check if the Sine radio button is selected.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         return sineButton.isSelected();
     }
 
@@ -301,6 +407,9 @@ private SineWaveGenerator activeSineGen = null;
      * @return true if Pink mode is selected; false otherwise
      */
     public boolean isPinkSelected() {
+        String msg = "Check if the Pink radio button is selected.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         return pinkButton.isSelected();
     }
 
@@ -311,6 +420,9 @@ private SineWaveGenerator activeSineGen = null;
      * @return true if Split mode is active; false otherwise
      */
     public boolean isSplitSelected() {
+        String msg = "Check if the Sine/Pink radio button is selected.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         return splitButton.isSelected();
     }
 
@@ -322,6 +434,9 @@ private SineWaveGenerator activeSineGen = null;
      * @param listener the ChangeListener to notify on frequency updates
      */
     public void addFrequencyChangeListener(ChangeListener listener) {
+        String msg = "Adding a change listener to the frequency slider for components outside of the class.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         frequencySlider.addChangeListener(listener);
     }
 
@@ -338,6 +453,9 @@ private SineWaveGenerator activeSineGen = null;
      * No effect if playback is not active.
      */
     private void applyAudioMode() {
+        String msg = "Check if the audio player is not running.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         if (!isRunning) return;
 
         if (isSineSelected()) {

@@ -18,8 +18,12 @@
  * -------------------------------------------------------------------------------
  * Change Log:
  * Mon 2025-05-26 File created.                                     Version: 00.01
+ * Sun 2025-08-24 Import samael.huginandmunin.*                     Version: 00.02
  * ------------------------------------------------------------------------------- */
 import javax.swing.SwingUtilities;
+import samael.huginandmunin.*;
+import tone3.gui.*;
+
 
 /**
  * App.java -  The App class serves as the entry point for the application. When
@@ -56,10 +60,19 @@ public class App {
      */
     public static void main(String[] args) {
 
+        Debug.init(args);
+        Log.init(Config.getString("App.LogName"));
+
+        Debug.setBitmask(Debug.DebugLevel.All.value);
+        Log.setBitmask(Log.LogLevel.All.value);
+
+        Debug.writeLine(Debug.DebugLevel.Info, "Application is starting...", "App");
+        Log.writeLine(Log.LogLevel.Info, "Application is starting...", "App");
+
         // Using SwingUtilities.invokeLater to start a
         // Swing application as background task.
         SwingUtilities.invokeLater(() -> {
-            tone3.gui.MainFrame mf = new tone3.gui.MainFrame();
+            MainFrame mf = new MainFrame();
             mf.setVisible(true);
         });
     }

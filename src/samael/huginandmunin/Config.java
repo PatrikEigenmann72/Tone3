@@ -69,14 +69,14 @@ public final class Config {
     /** Private constructor to prevent external instantiation */
     private Config() {
         settings = new HashMap<>();
-        setSetting("App.Name", "HelloJWorld");
-        setSetting("App.Version", "00.03");
+        setSetting("App.LogName", "Tone3.log");
+        setSetting("App.Name", "Tone3");
+        setSetting("App.Title", "A simple Tone Generator.");
+        setSetting("App.Version", "00.02");
         setSetting("App.Author", "Patrik Eigemann");
-        setSetting("App.Label.Text", "Hello Java World!");
-        setSetting("App.Label.Font", "Courier New");
-        setSetting("App.LogName", "HelloJWorld.log");
-        setSetting("App.Width", "300");
-        setSetting("App.Height", "120");
+        setSetting("App.Width", "400");
+        setSetting("App.Height", "180");
+        setSetting("App.Resize", "false");
     }
 
     /**
