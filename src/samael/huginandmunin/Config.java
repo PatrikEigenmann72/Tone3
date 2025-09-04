@@ -25,6 +25,10 @@
  * Fri 2025-08-22 Added support for String configuration values.                    Version: 00.12
  * Fri 2025-08-22 Private scope for get method.                                     Version: 00.13
  * Wed 2025-09-03 Enhancement: Add App.StartMode configuration.                     Version: 00.14
+ * Thu 2025-09-04 Enhancement: Add integers for Subs and Tops frequencies.          Version: 00.15
+ * ------------------------------------------------------------------------------------------------
+ * ToDo List:
+ * - Write errors also in the log file.
  * ------------------------------------------------------------------------------------------------ */
 package samael.huginandmunin;
 
@@ -73,12 +77,18 @@ public final class Config {
         setSetting("App.LogName", "Tone3.log");
         setSetting("App.Name", "Tone3");
         setSetting("App.Title", "A simple Tone Generator.");
-        setSetting("App.Version", "00.03");
+        setSetting("App.Version", "00.04");
         setSetting("App.Author", "Patrik Eigemann");
         setSetting("App.Width", "400");
         setSetting("App.Height", "180");
         setSetting("App.Resize", "false");
-        //setSetting("App.StartMode", "3");
+        setSetting("App.StartMode", "3");
+        setSetting("App.DefaulSub", "40");
+        setSetting("App.DefaultTop", "440");
+        setSetting("App.SubMin", "20");
+        setSetting("App.SubMax", "200");
+        setSetting("App.TopMin", "200");
+        setSetting("App.TopMax", "20000");
     }
 
     /**

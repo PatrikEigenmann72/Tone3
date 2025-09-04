@@ -27,12 +27,13 @@
 // Thu 2025-08-21 BugFix: Fixed label removal from dictionary.              Version 00.12
 // Wed 2025-09-03 Improvement: Started App with mode 3 sine / pink noise.   Version 00.13
 // Wed 2025-09-03 Improvement: Added debug logging for startup sequence.    Version 00.14
+// Thu 2025-09-04 Enhancement: Added switching between Subs and Tops.       Version 00.15
 // --------------------------------------------------------------------------------------
 // ToDo List:
 // - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
-//   will require for subwoofer testing that the frequency range of the slider is from 20hz
-//   to 200hz, while for mains testing it should be from 200hz to 20khz. This new feature
-//   will need to have a startup sequence and a configuration.
+//   will require for subwoofer testing that the frequency range of the slider is from
+//   20hz to 200hz, while for mains testing it should be from 200hz to 20khz. This new
+//   feature will need to have a startup sequence and a configuration.       9/4/25 Done.
 // --------------------------------------------------------------------------------------
 package tone3.gui;
 
@@ -60,6 +61,12 @@ import tone3.audio.*;
  */
 public class MainFrame extends JFrame {
     
+    /** This radio button distinguish if it is a subwoofer to test. */
+    private final JRadioButton subsButton;
+
+    /** This radio button distinguish if it is the top to test. */
+    private final JRadioButton topsButton;
+
     /** The frequency slider. Move it left or right to sweep pitch in real time. */
     private final JSlider frequencySlider;
 
@@ -87,7 +94,11 @@ public class MainFrame extends JFrame {
     /** If we’re in Sine or Split mode, this holds the sine generator for real-time updates. */
     private SineWaveGenerator activeSineGen = null;
 
+    /** The class name in a string so I don't have to pull out my nose how Java stores the classname. */
     private final String compString = "MainFrame";
+
+    /** Stores the last-used frequency when switching between Subs and Tops */
+    private int tempFreq = 0;
 
     /**
      * Constructor for the main window. Sets up the user interface: the frequency slider,
@@ -134,7 +145,53 @@ public class MainFrame extends JFrame {
         frequencyDisplay.setBackground(Color.YELLOW);
         frequencyDisplay.setFont(new Font("SansSerif", Font.BOLD, 16));
         frequencyDisplay.setPreferredSize(new Dimension(400, 40));
-        add(frequencyDisplay, BorderLayout.NORTH);
+
+        msg = "Creating top panel with Subs/Tops selector and frequency display.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        // Create Subs/Tops buttons
+        subsButton = new JRadioButton("Subs");
+        topsButton = new JRadioButton("Tops");
+        subsButton.setSelected(true); // Default to Subs
+
+        msg = "Gouping the subs / tops radio buttons!";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        ButtonGroup rangeGroup = new ButtonGroup();
+        rangeGroup.add(subsButton);
+        rangeGroup.add(topsButton);
+        subsButton.setFocusable(false);
+        topsButton.setFocusable(false);
+
+        msg = "Add this in a range panel so it is seperated from the rest!";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        // Create panel for range selection
+        JPanel rangePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        rangePanel.add(subsButton);
+        rangePanel.add(topsButton);
+
+        msg = "Now let's create the slider and its labels!";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        // Create top panel to hold range selector and frequency display
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(rangePanel, BorderLayout.NORTH);
+        topPanel.add(frequencyDisplay, BorderLayout.SOUTH);
+
+        add(topPanel, BorderLayout.NORTH);
+
+        msg = "The radio buttons need now an action listener, so I can trigger updateSliderRange()";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        ActionListener rangeListener = e -> updateSliderRange();
+        subsButton.addActionListener(rangeListener);
+        topsButton.addActionListener(rangeListener);
 
         /* 
          * Set up the frequency slider for audio frequency control.
@@ -408,8 +465,81 @@ public class MainFrame extends JFrame {
         });
 
         updateSliderEnabledState();
+        updateSliderRange();
         setVisible(true);
         SwingUtilities.invokeLater(() -> frequencySlider.requestFocusInWindow());
+    }
+
+    /**
+     * Updates the frequency slider whenever the user switches between subwoofer
+     * and mains testing. This method makes sure the slider reflects the right
+     * range depending on what you're testing. If you're working with subs, it
+     * narrows the slider to low frequencies. If you're testing tops, it opens up
+     * the full range. It also remembers the last frequency you used in each mode,
+     * so when you switch back, you’re not starting from scratch—you’re picking up
+     * where you left off.
+     * 
+     * The logic flows from top to bottom, without any confusing branches or hidden
+     * conditions. It’s designed to be predictable: you change the mode, the slider
+     * updates, and the frequency stays meaningful. Whether you're calibrating a system
+     * or just exploring tones, this keeps the experience smooth and intuitive.
+     */
+    private void updateSliderRange() {
+        String msg = "Declaring the variables min, max, newFreq, and temp.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        int min, max, newFreq, temp;
+
+        msg = "Let's write temp with: " + getFrequency();
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        temp = getFrequency();
+
+        msg = "Writing min, max, and newFreq in " + (subsButton.isSelected()?"Subs mode.": "Tops mode.");
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        if (subsButton.isSelected()) {
+            min = Config.getInt("App.SubMin");
+            max = Config.getInt("App.SubMax");
+            newFreq = (tempFreq >= min && tempFreq <= max) ? tempFreq : Config.getInt("App.DefaulSub");
+        } else {
+            min = Config.getInt("App.TopMin");
+            max = Config.getInt("App.TopMax");
+            newFreq = (tempFreq >= min && tempFreq <= max) ? tempFreq : Config.getInt("App.DefaultTop");
+        }
+
+        msg = "Setting the new values. Min: " + min + " Max: " + max + " newFreq:" +newFreq;
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        frequencySlider.setMinimum(min);
+        frequencySlider.setMaximum(max);
+        frequencySlider.setValue(Math.min(Math.max(newFreq, min), max));
+        frequencyDisplay.setText(newFreq + " Hz");
+
+        msg = "Set the frequency if the sine wave generator is on.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        if (isRunning && activeSineGen != null) {
+            activeSineGen.setFrequency(newFreq);
+        }
+
+        msg = "Write the slider label with min / max: " + min + " " + (max / 100) + "k.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        LabelDictionary labelTable = new LabelDictionary();
+        labelTable.put(min, new JLabel(min + ""));
+        labelTable.put(max, new JLabel((max >= 1000 ? (max / 1000) + "k" : max + "")));
+        frequencySlider.setLabelTable(labelTable);
+        frequencySlider.repaint();
+
+        msg = "Finally overwrite tempFreq with the old frequency " + temp + " hz.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        tempFreq = temp;
+
+        Debug.writeLine(Debug.DebugLevel.Verbose, "Slider range updated to " + min + "–" + max + " Hz", compString);
+        Log.writeLine(Log.LogLevel.Verbose, "Slider range updated to " + min + "–" + max + " Hz", compString);
     }
 
     /**
