@@ -23,9 +23,9 @@
  * Thu 2025-09-04 Enhancement: Switching between subs and tops implemented. Version: 00.04
  * ---------------------------------------------------------------------------------------
  * ToDo List:
-// - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
-//   will require for subwoofer testing that the frequency range of the slider is from
-//   20hz to 200hz, while for mains testing it should be from 200hz to 20khz. This new
+ * - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
+ *   will require for subwoofer testing that the frequency range of the slider is from
+ *   20hz to 200hz, while for mains testing it should be from 200hz to 20khz. This new
 //   feature will need to have a startup sequence and a configuration.              Done.
  * -------------------------------------------------------------------------------------- */
 import javax.swing.SwingUtilities;
