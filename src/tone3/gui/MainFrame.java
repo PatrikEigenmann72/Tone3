@@ -25,6 +25,14 @@
 // Mon 2025-06-30 Slider regains focus after toggling playback.             Version 00.10  
 // Mon 2025-06-30 Added header comments to the file.                        Version 00.11
 // Thu 2025-08-21 BugFix: Fixed label removal from dictionary.              Version 00.12
+// Wed 2025-09-03 Improvement: Started App with mode 3 sine / pink noise.   Version 00.13
+// Wed 2025-09-03 Improvement: Added debug logging for startup sequence.    Version 00.14
+// --------------------------------------------------------------------------------------
+// ToDo List:
+// - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
+//   will require for subwoofer testing that the frequency range of the slider is from 20hz
+//   to 200hz, while for mains testing it should be from 200hz to 20khz. This new feature
+//   will need to have a startup sequence and a configuration.
 // --------------------------------------------------------------------------------------
 package tone3.gui;
 
@@ -218,7 +226,54 @@ public class MainFrame extends JFrame {
         Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
         Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         splitButton = new JRadioButton("Sine L / Pink R");
-        sineButton.setSelected(true);
+
+        // Set the start up mode
+        int startMode = Config.getInt("App.StartMode");
+
+        msg = "Setting up the App in StartMode " + startMode;
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        switch(startMode) {
+            case 1 -> {
+                // Set these messages to info so I can see it.
+                msg = "Setting up the App in StartMode 1 (Sine)";
+                Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+                Log.writeLine(Log.LogLevel.Info, msg, compString);
+
+
+                sineButton.setSelected(true);
+            }
+            
+            case 2 -> {
+                msg = "Setting up the App in StartMode 2 (Pink)";
+                Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+                Log.writeLine(Log.LogLevel.Info, msg, compString);
+
+                pinkButton.setSelected(true);
+            }
+
+            case 3 -> {
+                msg = "Setting up the App in StartMode 3 (Sine L / Pink R)";
+                Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+                Log.writeLine(Log.LogLevel.Info, msg, compString);
+
+                splitButton.setSelected(true);
+            }
+
+            default -> {
+                // Handle unexpected values
+                msg = "Unexpected App.StartMode value: " + startMode;
+                Debug.writeLine(Debug.DebugLevel.Error, msg, compString);
+                Log.writeLine(Log.LogLevel.Error, msg, compString);
+
+                msg = "Defaulting to Split mode.";
+                Debug.writeLine(Debug.DebugLevel.Warning, msg, compString);
+                Log.writeLine(Log.LogLevel.Warning, msg, compString);
+
+                splitButton.setSelected(true);
+            }
+        }
 
         msg = "Setting up a group from the radio buttons.";
         Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);

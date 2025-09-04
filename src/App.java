@@ -17,8 +17,15 @@
  * GitHub:  www.github.com/PatrikEigemann/Java
  * -------------------------------------------------------------------------------
  * Change Log:
- * Mon 2025-05-26 File created.                                     Version: 00.01
- * Sun 2025-08-24 Import samael.huginandmunin.*                     Version: 00.02
+ * Mon 2025-05-26 File created.                                             Version: 00.01
+ * Sun 2025-08-24 Import samael.huginandmunin.*                             Version: 00.02
+ * Wed 2025-09-03 Improvement: Started App with mode 3 sine / pink noise.   Version: 00.03
+ * --------------------------------------------------------------------------------------
+ * ToDo List:
+ * - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
+ *   will require for subwoofer testing that the frequency range of the slider is from 20hz
+ *   to 200hz, while for mains testing it should be from 200hz to 20khz. This new feature
+ *   will need to have a startup sequence and a configuration.
  * ------------------------------------------------------------------------------- */
 import javax.swing.SwingUtilities;
 import samael.huginandmunin.*;

@@ -24,6 +24,7 @@
  * Thu 2025-08-21 Added support for char configuration values.                      Version: 00.11
  * Fri 2025-08-22 Added support for String configuration values.                    Version: 00.12
  * Fri 2025-08-22 Private scope for get method.                                     Version: 00.13
+ * Wed 2025-09-03 Enhancement: Add App.StartMode configuration.                     Version: 00.14
  * ------------------------------------------------------------------------------------------------ */
 package samael.huginandmunin;
 
@@ -72,11 +73,12 @@ public final class Config {
         setSetting("App.LogName", "Tone3.log");
         setSetting("App.Name", "Tone3");
         setSetting("App.Title", "A simple Tone Generator.");
-        setSetting("App.Version", "00.02");
+        setSetting("App.Version", "00.03");
         setSetting("App.Author", "Patrik Eigemann");
         setSetting("App.Width", "400");
         setSetting("App.Height", "180");
         setSetting("App.Resize", "false");
+        //setSetting("App.StartMode", "3");
     }
 
     /**
