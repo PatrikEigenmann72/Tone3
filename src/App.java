@@ -26,12 +26,11 @@
  * - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
  *   will require for subwoofer testing that the frequency range of the slider is from
  *   20hz to 200hz, while for mains testing it should be from 200hz to 20khz. This new
-//   feature will need to have a startup sequence and a configuration.              Done.
+ *   feature will need to have a startup sequence and a configuration.              Done.
  * -------------------------------------------------------------------------------------- */
 import javax.swing.SwingUtilities;
 import samael.huginandmunin.*;
 import tone3.gui.*;
-
 
 /**
  * App.java -  The App class serves as the entry point for the application. When
@@ -47,7 +46,6 @@ import tone3.gui.*;
  * the system knows to start. This class fulfills that role, keeping the application
  * streamlined and predictable across multiple use cases.
  */
-//@Version(namespace = "HelloWorld", component = "App", major = 0, minor = 1)
 public class App {
 
     /**
