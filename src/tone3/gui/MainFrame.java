@@ -107,13 +107,13 @@ public class MainFrame extends JFrame {
      * gets wired together.
      */
     public MainFrame() {
-        /* 
-         * Initialize the main application window. Title is fixed and layout is locked
-         * for minimal footprint. 
-         */
+        /* Set up the main window. Most of the words are from the Config class. */
         super(Config.getString("App.Name") + " v" + Config.getString("App.Version") + " - " + Config.getString("App.Title"));
+        String msg = "Initializing the MainFrame.";
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
 
-        String msg = "Set the default closing operation!";
+        msg = "Set the default closing operation!";
         Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
         Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -485,7 +485,11 @@ public class MainFrame extends JFrame {
      * or just exploring tones, this keeps the experience smooth and intuitive.
      */
     private void updateSliderRange() {
-        String msg = "Declaring the variables min, max, newFreq, and temp.";
+        String msg = "Start updating the slider range.";
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+
+        msg = "Declaring the variables min, max, newFreq, and temp.";
         Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
         Log.writeLine(Log.LogLevel.Verbose, msg, compString);
         int min, max, newFreq, temp;
@@ -548,10 +552,14 @@ public class MainFrame extends JFrame {
      * since pink noise ignores frequency. Focus is returned to the slider if re-enabled.
      */
     private void updateSliderEnabledState() {
+        
+        /* Slider is enabled if not in Pink mode */
         boolean enabled = !pinkButton.isSelected();
+        
         String msg = "Toggeling the slider enable state from '" + !enabled + "' to '" + enabled + "'.";
-        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
-        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+        
         frequencySlider.setEnabled(enabled);
         if (enabled) {
             SwingUtilities.invokeLater(() -> frequencySlider.requestFocusInWindow());
@@ -567,8 +575,8 @@ public class MainFrame extends JFrame {
      */
     public int getFrequency() {
         String msg = "Getting the slider value from the component.";
-        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
-        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
         return frequencySlider.getValue();
     }
 
@@ -580,8 +588,9 @@ public class MainFrame extends JFrame {
      */
     public boolean isSineSelected() {
         String msg = "Check if the Sine radio button is selected.";
-        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
-        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+        
         return sineButton.isSelected();
     }
 
@@ -593,8 +602,9 @@ public class MainFrame extends JFrame {
      */
     public boolean isPinkSelected() {
         String msg = "Check if the Pink radio button is selected.";
-        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
-        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+        
         return pinkButton.isSelected();
     }
 
@@ -606,8 +616,9 @@ public class MainFrame extends JFrame {
      */
     public boolean isSplitSelected() {
         String msg = "Check if the Sine/Pink radio button is selected.";
-        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
-        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+        
         return splitButton.isSelected();
     }
 
@@ -620,8 +631,9 @@ public class MainFrame extends JFrame {
      */
     public void addFrequencyChangeListener(ChangeListener listener) {
         String msg = "Adding a change listener to the frequency slider for components outside of the class.";
-        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
-        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+        
         frequencySlider.addChangeListener(listener);
     }
 
@@ -638,9 +650,14 @@ public class MainFrame extends JFrame {
      * No effect if playback is not active.
      */
     private void applyAudioMode() {
-        String msg = "Check if the audio player is not running.";
+        String msg = "Start applying the audio mode.";
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+
+        msg = "Check if the audio player is not running.";
         Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
         Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
         if (!isRunning) return;
 
         if (isSineSelected()) {
@@ -668,9 +685,16 @@ class LabelDictionary extends Dictionary<Integer, JLabel> {
     /** Backing HashMap for label storage */
     private final HashMap<Integer, JLabel> map = new HashMap<>();
 
+    /** Component Name */
+    private final String compString = "LabelDictionary";
+
     /** Retrieves a label by its key. */
     @Override
     public JLabel get(Object key) {
+        String msg = "Getting a label from the dictionary with key: " + key;
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
         if (key instanceof Integer intKey) {
             return map.get(intKey);
         }
@@ -678,26 +702,67 @@ class LabelDictionary extends Dictionary<Integer, JLabel> {
     }
 
     /** Adds a label to the dictionary. */
-    @Override public JLabel put(Integer key, JLabel value) { return map.put(key, value); }
+    @Override
+    public JLabel put(Integer key, JLabel value) {
+        String msg = "Putting a label into the dictionary with key: " + key;
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
+
+        return map.put(key, value);
+    }
 
     /** Removes a label from the dictionary. */
     @Override
     public JLabel remove(Object key) {
+        String msg = "Removing a label from the dictionary with key: " + key;
+        Debug.writeLine(Debug.DebugLevel.Info, msg, compString);
+        Log.writeLine(Log.LogLevel.Info, msg, compString);
         if (key instanceof Integer intKey) {
+            msg = "Removing the label from the map: " + intKey;
+            Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+            Log.writeLine(Log.LogLevel.Verbose, msg, compString);
             return map.remove(intKey);
         }
         return null;
     }
 
     /** Retrieves all keys in the dictionary. */
-    @Override public Enumeration<Integer> keys() { return Collections.enumeration(map.keySet()); }
+    @Override
+    public Enumeration<Integer> keys() {
+        String msg = "Getting all keys from the dictionary.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        return Collections.enumeration(map.keySet());
+    }
 
     /** Retrieves all labels in the dictionary. */
-    @Override public Enumeration<JLabel> elements() { return Collections.enumeration(map.values()); }
+    @Override
+    public Enumeration<JLabel> elements(){
+        String msg = "Getting all labels from the dictionary.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        return Collections.enumeration(map.values());
+    }
 
     /** Retrieves the number of labels in the dictionary. */
-    @Override public int size() { return map.size(); }
+    @Override
+    public int size() {
+        String msg = "Getting the size of the dictionary.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        return map.size();
+    }
 
     /** Retrieves the number of labels in the dictionary. */
-    @Override public boolean isEmpty() { return map.isEmpty(); }
+    @Override 
+    public boolean isEmpty() {
+        String msg = "Checking if the dictionary is empty.";
+        Debug.writeLine(Debug.DebugLevel.Verbose, msg, compString);
+        Log.writeLine(Log.LogLevel.Verbose, msg, compString);
+
+        return map.isEmpty();
+    }
 }
