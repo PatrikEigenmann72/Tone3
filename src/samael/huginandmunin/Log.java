@@ -186,27 +186,35 @@ public final class Log {
      * @return The absolute path to the user's Documents folder, respecting redirection if available.
      */
     public static String getDocumentsPath() {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(
-                "powershell", "-Command",
-                "[Environment]::GetFolderPath('MyDocuments')"
-            );
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
+        String os = System.getProperty("os.name").toLowerCase();
 
-            try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))) {
-                String path = reader.readLine();
+        if (os.contains("win")) {
+            try {
+                ProcessBuilder pb = new ProcessBuilder(
+                    "powershell", "-Command",
+                    "[Environment]::GetFolderPath('MyDocuments')"
+                );
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
 
-                process.waitFor();  // Ensure process completes
-                process.destroy();  // Explicitly destroy
+                try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                    String path = reader.readLine();
+                    process.waitFor();
+                    process.destroy();
 
-                return path != null ? path.trim() : null;
+                    if (path != null && !path.trim().isEmpty()) {
+                        return path.trim();
+                    }
+                }
+            } catch (IOException | InterruptedException e) {
+                debug("PowerShell failed, falling back to user.home/Documents");
             }
-        } catch (IOException | InterruptedException e) {
-            debug("Getting Document Path failed, fallback to " + System.getProperty("user.home") + "\\Documents");
-            return System.getProperty("user.home") + "\\Documents"; // fallback
+            return System.getProperty("user.home") + File.separator + "Documents";
         }
+
+        // macOS, Linux, etc.
+        return System.getProperty("user.home") + File.separator + "Documents";
     }
 
     /**
