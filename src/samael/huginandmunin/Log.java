@@ -1,24 +1,29 @@
-// --------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------
 // File: Samael/HuginAndMunin/Log.java
-// This file is part of the Samael.HuginAndMunin library and provides a logging utility.
-// It includes methods for writing log messages on the levels of errors and exceptions,
-// warnings, and informational or verbose messages. With this utility, developers can
-// persist application behavior to a log file for later inspection. The log messages are
-// timestamped and categorized for clarity.
-// --------------------------------------------------------------------------------------------
-// Author:          Patrik Eigenmann
-// eMail:           p.eigenmann72@gmail.com
-// GitHub:          https://github.com/PatrikEigenmann72/HelloJWorld
-// --------------------------------------------------------------------------------------------
+// This file is part of the Samael.HuginAndMunin library and provides a logging utility. It includes
+// methods for writing log messages on the levels of errors and exceptions, warnings, and informational
+// or verbose messages. With this utility, developers can persist application behavior to a log file
+// for later inspection. The log messages are timestamped and categorized for clarity.
+// ---------------------------------------------------------------------------------------------------
+// Author:  Patrik Eigenmann
+// eMail:   p.eigenmann72@gmail.com
+// GitHub:  https://github.com/PatrikEigenmann72/HelloJWorld
+// ---------------------------------------------------------------------------------------------------
 // Change Log:
-// Tue 2025-08-19 Initial Java implementation based on Debug.java.                  Version: 00.01
-// Tue 2025-08-19 Replaced try-with-resources with explicit close().                Version: 00.02
-// Sun 2025-08-24 Making sure that Log file is in the personal documents folder.    Version: 00.03
-// --------------------------------------------------------------------------------------------
+// Tue 2025-08-19 Initial Java implementation based on Debug.java.                      Version: 00.01
+// Tue 2025-08-19 Replaced try-with-resources with explicit close().                    Version: 00.02
+// Wed 2025-08-20 Bitmask for log levels and enum LogLevel added.                       Version: 00.03
+// Wed 2025-08-20 Added writeException() to log stack traces of exceptions.             Version: 00.04
+// Thu 2025-08-21 Refactored to use PrintWriter for writing to log file.                Version: 00.05
+// Sun 2025-08-24 Making sure that Log file is in the personal documents folder.        Version: 00.06
+// Sun 2025-08-31 Added getDocumentsPath() to resolve OS specific paths.                Version: 00.07
+// ---------------------------------------------------------------------------------------------------
 package samael.huginandmunin;
 
 /**
- * Standard Java imports. These are the necessary imports for file I/O and date/time formatting.
+ * These are the imports we need—mostly for file handling and working with dates.
+ * Nothing fancy, just the usual suspects from the standard Java library.
+ * If we ever add external dependencies, they’ll show up here too—but for now, it’s all native.
  */
 import java.io.*;
 import java.time.LocalTime;
@@ -44,11 +49,14 @@ public final class Log {
     private static final String ANSI_RESET = "\u001B[0m";
 
     /**
-     * This enum defines the different log levels available in the logging utility.
+     * These are the log levels we use to categorize messages—everything from quiet diagnostics to
+     * loud failures. Each level helps us decide what gets printed, stored, or ignored, depending
+     * on how noisy we want the system to be. If you’re adding a new level, make sure it plays well
+     * with the filtering logic downstream.
      */
     public enum LogLevel {
-        None(0),                                                            // No logging
-        @SuppressWarnings("PointlessBitwiseExpression")
+        None(0),                                                      // No logging
+        @SuppressWarnings("PointlessBitwiseExpression")                     // Suppress warning for All level definition
         Error(1 << 0),                                                      // Error logging
         Warning(1 << 1),                                                    // Warning logging
         Info(1 << 2),                                                       // Info logging
@@ -56,28 +64,41 @@ public final class Log {
         All(Error.value | Warning.value | Info.value | Verbose.value);      // All logging
 
         /**
-         * The bitmask value representing the log level.
+         * This value holds the bitmask for the current log level.
+         * It lets us flip specific logging flags on or off without dragging around extra state.
+         * If you're tweaking levels or adding new ones, make sure the masks stay mutually exclusive.
          */
         public final int value;
         
         /**
-         * Constructor for the LogLevel enum.
+         * This is the constructor for the LogLevel enum. Each level—Error, Warning, Info, or
+         * Verbose—is declared with a leading capital and lowercase remainder. The constructor
+         * assigns a bitmask to each level, allowing us to combine them using bitwise operations
+         * for flexible filtering and output control.
          */
         LogLevel(int value) { this.value = value; }
     }
 
     /**
-     * The bitmask value representing the active log levels.
+     * Holds the bitmask for whichever log levels are currently active. Combines levels like
+     * Error | Info or Warning | Verbose using bitwise flags, so the logger knows exactly what
+     * to print—no extra logic, no redundant state, just clean filtering.
      */
     private static int bitmask = LogLevel.All.value;
 
     /**
-     * The name of the log file.
+     * Name of the log file where messages get written. Could be absolute or relative,
+     * depending on how the logger is configured—just make sure it points somewhere writable.
      */
     private static String logFileName;
 
     /**
-     * The init method initializes the logging utility with a specific log file name.
+     * Initializes the logging utility with the specified log file name. This sets the output
+     * destination for all log entries—whether it's a relative path, absolute path, or something
+     * dynamically generated. The file needs to be writable at runtime, since every log level
+     * funnels through this unless redirected elsewhere.
+     * 
+     * @param fileName The name of the log file (e.g., "application.log").
      */
     public static void init(String fileName) {
         String documentFolder = getDocumentsPath();
@@ -101,18 +122,24 @@ public final class Log {
     }
 
     /**
-     * Sets the bitmask for the active log levels.
-     * @param bitmaskIn The new bitmask value.
+     * Sets the bitmask that defines which log levels are currently active.
+     * Combines levels like Error | Info or Warning | Verbose using bitwise flags,
+     * allowing the logger to filter output without extra logic or state.
+     *
+     * @param bitmaskIn the new bitmask value representing active log levels
      */
     public static void setBitmask(int bitmaskIn) {
         bitmask = bitmaskIn;
     }
 
     /**
-     * Writes a log message to the log file.
-     * @param level The log level of the message.
-     * @param message The log message.
-     * @param component The name of the component logging the message.
+     * Writes a log entry to the active log file. The message is tagged with its log level
+     * and the name of the component that generated it, so downstream readers or tools can
+     * filter, trace, or analyze output more effectively.
+     *
+     * @param level the severity or category of the message (e.g., Error, Info, Verbose)
+     * @param message the actual content to be logged
+     * @param component the logical source of the message, useful for tracing system behavior
      */
     public static void writeLine(LogLevel level, String message, String component) {
         if ((bitmask & level.value) == 0 || logFileName == null) return;
@@ -132,8 +159,10 @@ public final class Log {
     }
 
     /**
-     * Writes an exception stack trace to the log file.
-     * @param ex The exception to log.
+     * Logs the full stack trace of the given exception to the active log file. Useful for
+     * diagnosing unexpected failures, especially when paired with contextual log messages.
+     *
+     * @param ex the exception to capture and write to the log output
      */
     public static void writeException(Exception ex) {
         if ((bitmask & LogLevel.Error.value) == 0 || logFileName == null) return;
@@ -154,17 +183,22 @@ public final class Log {
     }
 
     /**
-     * Opens the log file for writing.
-     * @return A PrintWriter for the log file.
-     * @throws IOException If an I/O error occurs.
+     * Opens the log file and prepares it for writing. If the file doesn’t exist, it’ll be created;
+     * if it does, new log entries will be appended unless configured otherwise. This method assumes
+     * the file path is valid and writable—any I/O issues will bubble up.
+     *
+     * @return a PrintWriter tied to the log file, ready to receive output
+     * @throws IOException if the file can’t be accessed, created, or written to
      */
     private static PrintWriter open() throws IOException {
         return new PrintWriter(new FileWriter(logFileName, true), true);
     }
 
     /**
-     * Closes the log file.
-     * @param writer The PrintWriter for the log file.
+     * Closes the log file stream and releases any system resources tied to it.
+     * Should be called when logging is complete to avoid file locks or memory leaks.
+     *
+     * @param writer the PrintWriter instance currently writing to the log file
      */
     private static void close(PrintWriter writer) {
         if (writer != null) {
@@ -173,41 +207,40 @@ public final class Log {
     }
 
     /**
-     * Resolves the user's personal Documents folder path on Windows systems.
+     * Resolves the path to the user's Documents folder in a platform-aware way.
      * <p>
-     * This method invokes PowerShell to query the actual location of the "MyDocuments" folder,
-     * ensuring compatibility with redirected folders (e.g., moved to a secondary drive).
-     * The result is trimmed and returned as a string. If the PowerShell invocation fails
-     * or returns an empty result, the method falls back to the default profile-based path
-     * using {@code user.home\Documents}.
+     * On Windows, runs a PowerShell command to query the actual location of "MyDocuments",
+     * which accounts for folder redirection (e.g., moved to another drive or network share).
+     * If the query fails or returns nothing, falls back to {@code user.home\Documents}.
      * <p>
-     * This approach avoids external dependencies and ensures lean, platform-aware behavior.
+     * On non-Windows systems, defaults directly to {@code user.home/Documents}.
+     * This method avoids external dependencies and keeps behavior predictable across platforms.
      *
-     * @return The absolute path to the user's Documents folder, respecting redirection if available.
+     * @return the absolute path to the user's Documents folder, honoring redirection on Windows
      */
     public static String getDocumentsPath() {
         String os = System.getProperty("os.name").toLowerCase();
 
         if (os.contains("win")) {
-            try {
-                ProcessBuilder pb = new ProcessBuilder(
-                    "powershell", "-Command",
-                    "[Environment]::GetFolderPath('MyDocuments')"
-                );
-                pb.redirectErrorStream(true);
-                Process process = pb.start();
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                "powershell", "-Command",
+                "[Environment]::GetFolderPath('MyDocuments')"
+            );
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
 
-                try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                    String path = reader.readLine();
+            try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+                String path = reader.readLine();
                     process.waitFor();
                     process.destroy();
 
                     if (path != null && !path.trim().isEmpty()) {
                         return path.trim();
                     }
-                }
-            } catch (IOException | InterruptedException e) {
+            }
+        } catch (IOException | InterruptedException e) {
                 debug("PowerShell failed, falling back to user.home/Documents");
             }
             return System.getProperty("user.home") + File.separator + "Documents";
@@ -218,10 +251,10 @@ public final class Log {
     }
 
     /**
-     * Logs debug information for configuration errors.
-     * @param key The configuration key that caused the error.
-     * @param value The configuration value that caused the error.
-     * @param type The expected type of the configuration value.
+     * Logs debug output related to configuration errors. Useful for tracing setup issues,
+     * unexpected values, or fallback behavior during initialization.
+     *
+     * @param msg the message to be displayed in the debug log
      */
     private static void debug(String msg) {
         String timestamp = java.time.LocalTime.now()
