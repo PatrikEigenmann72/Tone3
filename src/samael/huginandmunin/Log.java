@@ -55,13 +55,13 @@ public final class Log {
      * with the filtering logic downstream.
      */
     public enum LogLevel {
-        None(0),                                                      // No logging
-        @SuppressWarnings("PointlessBitwiseExpression")                     // Suppress warning for All level definition
-        Error(1 << 0),                                                      // Error logging
-        Warning(1 << 1),                                                    // Warning logging
-        Info(1 << 2),                                                       // Info logging
-        Verbose(1 << 3),                                                    // Verbose logging
-        All(Error.value | Warning.value | Info.value | Verbose.value);      // All logging
+        None(0),                                                        // No logging
+        @SuppressWarnings("PointlessBitwiseExpression")                 // Suppress warning for All level definition
+        Error(1 << 0),                                                  // Error logging
+        Warning(1 << 1),                                                // Warning logging
+        Info(1 << 2),                                                   // Info logging
+        Verbose(1 << 3),                                                // Verbose logging
+        All(Error.value | Warning.value | Info.value | Verbose.value);  // All logging
 
         /**
          * This value holds the bitmask for the current log level.
@@ -222,26 +222,26 @@ public final class Log {
         String os = System.getProperty("os.name").toLowerCase();
 
         if (os.contains("win")) {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(
-                "powershell", "-Command",
-                "[Environment]::GetFolderPath('MyDocuments')"
-            );
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
+            try {
+                ProcessBuilder pb = new ProcessBuilder(
+                    "powershell", "-Command",
+                    "[Environment]::GetFolderPath('MyDocuments')"
+                );
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
 
-            try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))) {
-                String path = reader.readLine();
+                try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                    String path = reader.readLine();
                     process.waitFor();
                     process.destroy();
 
                     if (path != null && !path.trim().isEmpty()) {
                         return path.trim();
                     }
-            }
-        } catch (IOException | InterruptedException e) {
-                debug("PowerShell failed, falling back to user.home/Documents");
+                }
+            } catch (IOException | InterruptedException e) {
+                    debug("PowerShell failed, falling back to user.home/Documents");
             }
             return System.getProperty("user.home") + File.separator + "Documents";
         }
