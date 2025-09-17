@@ -26,6 +26,7 @@
  * Fri 2025-08-22 Private scope for get method.                                     Version: 00.13
  * Wed 2025-09-03 Enhancement: Add App.StartMode configuration.                     Version: 00.14
  * Thu 2025-09-04 Enhancement: Add integers for Subs and Tops frequencies.          Version: 00.15
+ * Wed 2025-09-17 Enhancement: Add App.IconName configuration.                      Version: 00.16
  * ------------------------------------------------------------------------------------------------
  * ToDo List:
  * - Write errors also in the log file.
@@ -77,8 +78,9 @@ public final class Config {
         setSetting("App.LogName", "Tone3.log");
         setSetting("App.Name", "Tone3");
         setSetting("App.Title", "A simple Tone Generator.");
-        setSetting("App.Version", "00.04");
+        setSetting("App.Version", "00.06");
         setSetting("App.Author", "Patrik Eigemann");
+        setSetting("App.IconName", "sinewave.png");
         setSetting("App.Width", "400");
         setSetting("App.Height", "180");
         setSetting("App.Resize", "false");

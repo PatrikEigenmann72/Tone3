@@ -21,6 +21,8 @@
  * Sun 2025-08-24 Import samael.huginandmunin.*                             Version: 00.02
  * Wed 2025-09-03 Improvement: Started App with mode 3 sine / pink noise.   Version: 00.03
  * Thu 2025-09-04 Enhancement: Switching between subs and tops implemented. Version: 00.04
+ * Wed 2025-09-17 Enhancement: Added method loadIcon.                       Version: 00.05
+ * Wed 2025-09-17 Enhancement: Load icon from resources.                    Version: 00.06
  * ---------------------------------------------------------------------------------------
  * ToDo List:
  * - I need a radio buttons to switch between Subwoofer testing and Mains testing. This
@@ -29,6 +31,9 @@
  *   feature will need to have a startup sequence and a configuration.              Done.
  * -------------------------------------------------------------------------------------- */
 import javax.swing.SwingUtilities;
+import java.awt.Image;
+import java.io.InputStream;
+import javax.imageio.ImageIO;
 import samael.huginandmunin.*;
 import tone3.gui.*;
 
@@ -70,7 +75,7 @@ public class App {
         Log.init(Config.getString("App.LogName"));
 
         Debug.setBitmask(Debug.DebugLevel.All.value);
-        Log.setBitmask(Log.LogLevel.Info.value | Log.LogLevel.Error.value | Log.LogLevel.Warning.value);
+        Log.setBitmask(Log.LogLevel.All.value);
 
         Debug.writeLine(Debug.DebugLevel.Info, "Application is starting...", "App");
         Log.writeLine(Log.LogLevel.Info, "Application is starting...", "App");
@@ -79,7 +84,61 @@ public class App {
         // Swing application as background task.
         SwingUtilities.invokeLater(() -> {
             MainFrame mf = new MainFrame();
+
+            // Icon logic added here.
+            String msg;
+            String icon = "resources/icons/" + Config.getString("App.IconName");
+            Image appIcon = loadIcon(icon);
+            if (appIcon != null) {
+                msg = "Application icon loaded from resources: " + icon;
+                Debug.writeLine(Debug.DebugLevel.Info, msg, "App");
+                Log.writeLine(Log.LogLevel.Info, msg, "App");
+                mf.setIconImage(appIcon);
+            } else {
+                msg = "Application icon missing: " + icon;
+                Debug.writeLine(Debug.DebugLevel.Warning, msg, "App");
+                Log.writeLine(Log.LogLevel.Warning, msg, "App");
+            }
+
             mf.setVisible(true);
         });
+    }
+
+    /**
+     * Loads an image resource from the application's classpath.
+     * <p>
+     * This method is designed to retrieve a specific icon file—typically located under
+     * {@code resources/icons/}—and return it as an {@link java.awt.Image} object.
+     * It uses the class loader to access resources packaged inside the JAR.
+     * <p>
+     * All diagnostic output is routed through {@code Debug} and {@code Log}, ensuring
+     * consistent logging and traceability. If the resource is missing or unreadable,
+     * the method returns {@code null} and logs the appropriate messages.
+     * <p>
+     * This method is intended for use during application startup to set the window icon.
+     * Future versions may be modularized into {@code samael.tabernacle.ResourceLoader}.
+     *
+     * @param icon the full classpath-relative path to the icon file (e.g. {@code resources/icons/sinewave.png})
+     * @return the loaded {@code Image} object, or {@code null} if loading fails
+     */
+    public static Image loadIcon(String icon) {
+        String msg;
+
+        try (InputStream stream = App.class.getClassLoader().getResourceAsStream(icon)) {
+            if (stream == null) {
+                msg = "Missing resource: " + icon;
+                Debug.writeLine(Debug.DebugLevel.Warning, msg, "App");
+                Log.writeLine(Log.LogLevel.Warning, msg, "App");
+                return null;
+            }
+            return ImageIO.read(stream);
+        } catch (Exception e) {
+            msg = "Failed to load icon: " + icon;
+            Debug.writeLine(Debug.DebugLevel.Error, msg, "App");
+            Log.writeLine(Log.LogLevel.Error, msg, "App");
+            Debug.writeException(e);
+            Log.writeException(e);
+            return null;
+        }
     }
 }
